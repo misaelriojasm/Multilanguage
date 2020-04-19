@@ -27,7 +27,7 @@ Widget build(BuildContext context) {
     ...
     return ...
     ...
-    Text(multilang.get('title'))
+    title: Text(txt('title')),
     ...
 }
 ```
@@ -86,7 +86,7 @@ class HomeView extends StatelessWidget {
 }
 ```
 
-## COMMON ERROR
+## Common Error
 If you can't use this current package version may because pub packages error thing. So just import it using git to always have the last update of this. Feel free to download it and change the usages as you want. Feedback and contribution is always received.  
 
 
