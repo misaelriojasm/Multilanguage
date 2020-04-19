@@ -1,73 +1,56 @@
-import 'dart:async';
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:flutter/services.dart';
 
-class MultilanguageBloc {
-
-  final _controller = StreamController<dynamic>.broadcast();
-  Function(dynamic) get push => _controller.sink.add;
-  Stream<dynamic> get stream => _controller.stream;
-  var counter = 0;
-  MultilanguageBloc();
-  changeLanguage({context, String path}) {
-    Multilanguage.setLanguage(
-        path:path, context: context);
-    push(null);
-  }
-  changeLanguageTest(context) {
-    Multilanguage.setLanguage(
-        path: counter % 2 == 0 ? Languages.en : Languages.es, context: context);
-    counter++;
-    push(null);
-  }
-
-  void dispose() {
-    _controller.close();
-  }
-}
-MultilanguageBloc multilangBloc = MultilanguageBloc();
-
+/// FEEL FREE TO LOAD THIS CLASS WITH YOUR CURRENT JSOM FILES
+/// REMEMBER YOU SHOULD LOAD IT FIRST IN YOUR PUBSPEC.YAML
 class Languages {
-  Languages._();
   static const String en = 'assets/json/en.json';
   static const String es = 'assets/json/es.json';
-  static const String fr = 'assets/json/fr.json';
-
 }
 
+/// THE NAME OF CURRENT JSON FILE INSIDE THE APP CACHE
 String _langKey = 'lang';
 
-class Multilanguage {
-  static const MethodChannel _channel =
-  const MethodChannel('multilanguage_plugin');
-
-  static Future<String> get platformVersion async {
-    final String version = await _channel.invokeMethod('getPlatformVersion');
-    return version;
-  }
-
-  final english = 'assets/json/en.json';
+/// THE NAME OF THE CLASS WHICH MANAGES THE MULTI-LANGUAGE PACKAGE
+class MultiLanguage {
   Map<String, dynamic> phrases;
-  Multilanguage(this.phrases);
+  MultiLanguage(this.phrases);
 
+  /// SET THE LANGUAGE METHOD
+  /// USES PATH FROM [LANGUAGES] TO GET THE FILE
+  /// USES CONTEXT TO GET THE FULL PATH
   static setLanguage(
-      {@required String path,
-        @required BuildContext context,
-        Function() onLoad,bool start = false}) async {
+      {@required String path, @required BuildContext context}) async {
+    /// GETS THE SHARE PREFERENCES INSTANCE
     final prefs = await SharedPreferences.getInstance();
-    if (prefs.getString(_langKey) != null && start) path = prefs.getString(_langKey);
-    var file = await DefaultAssetBundle.of(context).loadString(path);
-    print(path);
 
+    /// VALIDATES IF THE PATH EXIST INSIDE THE PHONE
+    if (prefs.getString(_langKey) != null) path = prefs.getString(_langKey);
+
+    /// GETS THE FILE PATH
+    var file = await DefaultAssetBundle.of(context).loadString(path);
+
+    /// SETS THE FILE INSIDE THE PHONE
     prefs.setString(_langKey, path);
-    multilang = Multilanguage(jsonDecode(file));
+
+    /// LOADS THE JSON FILE INSIDE THE MULTILANG
+    multilang = MultiLanguage(jsonDecode(file));
   }
 
+  /// GET METHOD RETURNS THE STRING FROM THE JSON FILE CREATED
   String get(String key) {
+    /// IF STRING DON'T EXIST JUST RETURNS THE NAME OF THE STRING YOU WANTED TO SEARCH
     return phrases != null ? phrases[key] : key;
   }
 }
 
-Multilanguage multilang = Multilanguage(null);
+/// INITIALIZE THE MULTILANG - YOU WILL BE USING THIS AROUND YOUR APPLICATION
+MultiLanguage multilang = MultiLanguage(null);
+
+/// SHORTCUT FOR THE GETTER TEXT
+Function(String key) get txt => multilang.get;
+
+/// SHORTCUT FOR THE GETTER UPPERCASE TEXT
+Function(String key) get uptxt =>
+    (String key) => multilang.get(key).toUpperCase();
